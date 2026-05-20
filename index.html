@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SIKAL-Ai Studio</title>
+    <style>
+        :root { 
+            --bg: #060913; 
+            --panel: #0b132b; 
+            --panel-light: #141f36;
+            --blue: #00b4d8; 
+            --blue-gradient: linear-gradient(90deg, #00b4d8, #0077b6);
+            --text: #e2e8f0; 
+            --text-muted: #64748b;
+            --border: #1e293b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+        body { background: var(--bg); color: var(--text); display: flex; justify-content: center; min-height: 100vh; }
+        
+        /* Layout Container Aplikasi */
+        .app-container { width: 100%; max-width: 480px; background: var(--bg); display: flex; flex-direction: column; min-height: 100vh; position: relative; }
+        
+        /* 1. NAVBAR ATAS (Persis Moonray) */
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: #070a14; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
+        .nav-left { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 800; color: var(--blue); letter-spacing: 0.5px; }
+        .nav-right { display: flex; align-items: center; gap: 8px; }
+        .status-badge { display: flex; align-items: center; gap: 6px; background: var(--panel-light); padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; border: 1px solid var(--border); }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; }
+        .status-dot.active { background: #10b981; box-shadow: 0 0 8px #10b981; }
+        .btn-icon { background: var(--panel-light); border: 1px solid var(--border); padding: 6px 10px; border-radius: 8px; color: white; cursor: pointer; font-size: 12px; }
+        .btn-logout { background: #3b141a; color: #ef4444; border: 1px solid #501b22; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer; }
+
+        /* Area Konten */
+        .content { padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 12px; padding-bottom: 85px; }
+        
+        /* Card Panel Umum */
+        .card { background: var(--panel); border-radius: 16px; border: 1px solid var(--border); padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .card-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+
+        /* =======================================
+           HALAMAN GERBANG / INPUT KEY (POTO 1) 
+           ======================================= */
+        .welcome-section { text-align: center; padding: 20px 10px; }
+        .welcome-title { font-size: 22px; font-weight: 800; color: var(--blue); margin-top: 10px; }
+        .welcome-sub { font-size: 12px; color: var(--text-muted); margin-top: 5px; }
+        
+        .step-box { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 15px; }
+        .step-num { width: 24px; height: 24px; background: #3b82f6; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; flex-shrink: 0; }
+        .step-num.orange { background: #f97316; }
+        .step-content { flex: 1; }
+        .step-title { font-size: 13px; font-weight: 700; color: var(--text); }
+        .step-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+        
+        .btn-link { background: var(--panel-light); color: var(--blue); border: 1px solid var(--border); width: 100%; padding: 10px; border-radius: 10px; font-size: 12px; font-weight: 600; text-align: center; margin-top: 8px; cursor: pointer; }
+        .input-row { display: flex; gap: 8px; margin-top: 8px; }
+        .input-row input { flex: 1; background: #070a13; border: 1px solid var(--border); padding: 10px 12px; border-radius: 10px; color: white; font-size: 13px; outline: none; }
+        .btn-save { background: var(--blue-gradient); color: white; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; font-size: 13px; cursor: pointer; }
+
+        /* =======================================
+           HALAMAN STUDIO / UTAMA (POTO 2)
+           ======================================= */
+        /* Slider Model Bundar */
+        .model-scroll { width: 100%; overflow-x: auto; padding-bottom: 6px; margin-bottom: -4px; }
+        .model-list { display: flex; gap: 12px; width: max-content; }
+        .model-item { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; width: 65px; position: relative; }
+        .model-circle { width: 52px; height: 52px; background: var(--panel-light); border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 20px; transition: 0.2s; }
+        .model-item.active .model-circle { border-color: var(--blue); box-shadow: 0 0 10px rgba(0,180,216,0.3); background: #0f172a; }
+        .model-name { font-size: 10px; text-align: center; color: var(--text-muted); width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .model-item.active .model-name { color: var(--blue); font-weight: 600; }
+        .badge { position: absolute; top: -4px; right: -2px; background: #3b82f6; color: white; font-size: 8px; font-weight: bold; padding: 1px 4px; border-radius: 6px; text-transform: uppercase; }
+
+        /* Grid Upload Kiri-Kanan */
+        .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .upload-box { border: 1px dashed var(--border); background: #070a13; border-radius: 12px; padding: 25px 10px; text-align: center; cursor: pointer; display: flex; flex-direction: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .upload-icon { font-size: 22px; }
+        .upload-text { font-size: 11px; font-weight: 600; }
+        .upload-sub { font-size: 9px; color: var(--text-muted); }
+        .upload-url { font-size: 10px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; margin-top: 5px; text-decoration: underline; }
+
+        /* Input Textarea Prompt */
+        textarea { width: 100%; height: 80px; background: #070a13; border: 1px solid var(--border); border-radius: 12px; color: white; padding: 12px; font-size: 13px; outline: none; resize: none; line-height: 1.4; }
+        
+        /* Settings (Dropdown & Slider) */
+        .setting-item { margin-bottom: 12px; }
+        .setting-item:last-child { margin-bottom: 0; }
+        .setting-label { font-size: 11px; color: var(--text-muted); margin-bottom: 5px; }
+        select { width: 100%; background: #070a13; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 10px; font-size: 13px; outline: none; }
+        .slider-container { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
+        input[type="range"] { flex: 1; accent-color: var(--blue); height: 4px; background: var(--border); border-radius: 2px; outline: none; }
+        .slider-val { font-size: 12px; font-weight: bold; color: var(--blue); width: 25px; text-align: right; }
+
+        /* 3. FLOATING ACTION BUTTON FIX DI BAWAH (Persis Moonray) */
+        .footer-action { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: #070a14; padding: 12px; border-top: 1px solid var(--border); box-shadow: 0 -8px 20px rgba(0,0,0,0.5); z-index: 10; }
+        .btn-generate { background: var(--blue-gradient); color: white; border: none; padding: 14px; border-radius: 14px; width: 100%; font-weight: 700; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 10px rgba(0,180,216,0.2); }
+        .btn-generate:active { transform: scale(0.98); }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    <div class="navbar">
+        <div class="nav-left">SIKAL-Ai</div>
+        <div class="nav-right">
+            <div class="status-badge">
+                <div id="status-dot" class="status-dot"></div>
+                <span id="status-text">Belum Terhubung</span>
+            </div>
+            <button id="logout-btn" class="btn-logout hidden" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="content">
+        
+        <div id="panel-gerbang" class="card">
+            <div class="welcome-section">
+                <div style="font-size: 40px;">⚡</div>
+                <div class="welcome-title">Selamat Datang di SIKAL-Ai</div>
+                <div class="welcome-sub">AI Video Generator dengan 4+ model HF Paling Gacor</div>
+            </div>
+
+            <div class="step-box" style="margin-top: 15px;">
+                <div class="step-num">1</div>
+                <div class="step-content">
+                    <div class="step-title">Daftar Akun Hugging Face (Gratis)</div>
+                    <div class="step-desc">Dapatkan token akses hf_ gratisan lu bray.</div>
+                    <div class="btn-link" onclick="window.open('https://huggingface.co/join', '_blank')">📝 Buka Halaman Daftar →</div>
+                </div>
+            </div>
+
+            <div class="step-box">
+                <div class="step-num orange">2</div>
+                <div class="step-content">
+                    <div class="step-title">Paste API Key Lu</div>
+                    <div class="step-desc">Disimpan lokal aman di perangkat ini (BYOK).</div>
+                    <div class="input-row">
+                        <input type="text" id="token-input" placeholder="hf_xxxxxxxxxxxxxxxxxxxx">
+                        <button class="btn-save" onclick="saveToken()">Simpan</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: #0d1b2a; border: 1px solid #1e3a8a; border-radius: 12px; padding: 12px; margin-top: 20px; font-size: 11px; line-height: 1.5; color: #93c5fd;">
+                📌 <b>Info:</b><br>
+                • Pendaftaran & token HF <b>100% gratis</b> tanpa modal kartu kredit.<br>
+                • API key disimpan <b>hanya di perangkat ini</b> secara lokal.<br>
+                • Setiap generate langsung memotong kuota dari akun HF milik masing-masing user.
+            </div>
+        </div>
+
+        <div id="studio-models" class="model-scroll hidden">
+            <div class="model-list">
+                <div class="model-item active" onclick="selectModel(this, 'tencent/HunyuanVideo')">
+                    <div class="model-circle">🎬</div>
+                    <div class="model-name">HunyuanVideo</div>
+                </div>
+                <div class="model-item" onclick="selectModel(this, 'THUDM/CogVideoX-5b')">
+                    <div class="model-circle">🔥</div>
+                    <div class="model-name">CogVideoX</div>
+                    <div class="badge">Hot</div>
+                </div>
+                <div class="model-item" onclick="selectModel(this, 'guoyww/AnimateDiff')">
+                    <div class="model-circle">🎞️</div>
+                    <div class="model-name">AnimateDiff</div>
+                    <div class="badge">V3</div>
+                </div>
+                <div class="model-item" onclick="selectModel(this, 'StabilityAI/stable-video-diffusion-img2vid-xt')">
+                    <div class="model-circle">🧠</div>
+                    <div class="model-name">StableVideo</div>
+                    <div class="badge">V3</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="studio-header" class="card hidden" style="padding: 10px 15px; display: flex; align-items: center; gap: 10px;">
+            <div style="font-size: 24px;">🎬</div>
+            <div>
+                <div id="active-model-title" style="font-size: 13px; font-weight: 700;">HunyuanVideo (Gacor)</div>
+                <div style="font-size: 10px; color: var(--text-muted);">Murni realis kamera HP asli tajam depan belakang (f/18) tanpa suara.</div>
+            </div>
+        </div>
+
+        <div id="studio-uploads" class="upload-grid hidden">
+            <div class="upload-box">
+                <div class="upload-icon">📸</div>
+                <div class="upload-text">📸 📸 Gambar</div>
+                <div class="upload-sub">Klik atau drag file<br>JPG, PNG, WEBP</div>
+                <div class="upload-url">🔗 Masukkan URL</div>
+            </div>
+            <div class="upload-box">
+                <div class="upload-icon">🎥</div>
+                <div class="upload-text">🎥 🎥 Video</div>
+                <div class="upload-sub">Klik atau drag file<br>MP4, MOV</div>
+                <div class="upload-url">🔗 Masukkan URL</div>
+            </div>
+        </div>
+
+        <div id="studio-prompt" class="card hidden">
+            <div class="card-title">💬 Prompt</div>
+            <textarea id="prompt" placeholder="Deskripsikan yang diinginkan (Contoh: Sikal lagi nongkrong di depan indomaret)..."></textarea>
+        </div>
+
+        <div id="studio-settings" class="card hidden">
+            <div class="card-title">⚙️ Settings</div>
+            
+            <div class="setting-item">
+                <div class="setting-label">Orientation</div>
+                <select>
+                    <option>Video (Sesuai HP)</option>
+                    <option>Square (1:1)</option>
+                </select>
+            </div>
+
+            <div class="setting-item">
+                <div class="setting-label">CFG Scale</div>
+                <div class="slider-container">
+                    <input type="range" id="cfg-scale" min="0.1" max="1.0" step="0.1" value="0.5" oninput="document.getElementById('cfg-val').innerText = this.value">
+                    <div id="cfg-val" class="slider-val">0.5</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="studio-result" class="card hidden" style="text-align: center;">
+            <div class="card-title">🎥 Monitor Output</div>
+            <div id="result-zone" style="font-size: 12px; color: var(--text-muted); padding: 10px 0;">Video hasil olahan HP bakal nongol di area ini.</div>
+        </div>
+
+    </div>
+
+    <div id="studio-footer" class="footer-action hidden">
+        <button id="gen-btn" class="btn-generate" onclick="generateVideo()">🚀 Generate Video</button>
+    </div>
+
+</div>
+
+<script>
+    let selectedModel = 'tencent/HunyuanVideo';
+
+    window.onload = function() {
+        const token = localStorage.getItem('sikal_hf_token');
+        if(token) {
+            // Aktifkan Status Terhubung di Navbar
+            document.getElementById('status-dot').classList.add('active');
+            document.getElementById('status-text').innerText = 'Terhubung';
+            document.getElementById('logout-btn').classList.remove('hidden');
+            
+            // Tukar Tampilan dari Halaman Gerbang ke Halaman Studio
+            document.getElementById('panel-gerbang').classList.add('hidden');
+            document.getElementById('studio-models').classList.remove('hidden');
+            document.getElementById('studio-header').classList.remove('hidden');
+            document.getElementById('studio-uploads').classList.remove('hidden');
+            document.getElementById('studio-prompt').classList.remove('hidden');
+            document.getElementById('studio-settings').classList.remove('hidden');
+            document.getElementById('studio-result').classList.remove('hidden');
+            document.getElementById('studio-footer').classList.remove('hidden');
+        }
+    }
+
+    function saveToken() {
+        const t = document.getElementById('token-input').value.trim();
+        if(t.startsWith('hf_')) {
+            localStorage.setItem('sikal_hf_token', t);
+            location.reload();
+        } else {
+            alert('Format salah, bray! Harus diawali kode hf_ biar tembus.');
+        }
+    }
+
+    function selectModel(element, modelName) {
+        document.querySelectorAll('.model-item').forEach(item => item.classList.remove('active'));
+        element.classList.add('active');
+        selectedModel = modelName;
+        
+        // Update teks nama header model
+        const cleanName = modelName.split('/')[1] || modelName;
+        document.getElementById('active-model-title').innerText = cleanName;
+    }
+
+    function logout() {
+        localStorage.removeItem('sikal_hf_token');
+        location.reload();
+    }
+
+    async function generateVideo() {
+        const userPrompt = document.getElementById('prompt').value.trim();
+        const token = localStorage.getItem('sikal_hf_token');
+        const btn = document.getElementById('gen-btn');
+        const resultZone = document.getElementById('result-zone');
+        
+        if(!userPrompt) return alert('Prompt kosong, isi dulu cok!');
+
+        // Formula suntikan prompt untuk mengunci lensa realis HP asli & bisu total tanpa music
+        const smartphonePrompt = `${userPrompt}, captured on amateur smartphone camera, iPhone 15 pro max style, deep depth of field, f/18 aperture clarity, sharp focus background and foreground, amateur handheld video footage, shaky phone movement, natural daylight, ordinary everyday life aesthetic, non-cinematic, realistic raw footage, muted coloring, completely silent video, no talking, no background music`;
+
+        btn.disabled = true;
+        btn.innerText = 'Lagi diproses sistem... ⏳';
+        resultZone.innerHTML = '<p style="color:var(--blue); padding:15px;">Mengirim parameter data ke Hugging Face, mohon tunggu bray...</p>';
+
+        try {
+            const res = await fetch('/api/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    prompt: smartphonePrompt, 
+                    token: token, 
+                    model: selectedModel 
+                })
+            });
+
+            if (!res.ok) throw new Error('Jalur Hugging Face lagi padet, coba lagi beberapa saat!');
+
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            resultZone.innerHTML = `<video src="${url}" controls autoplay loop style="width:100%; border-radius:10px; border:1px solid var(--border);"></video>`;
+        } catch (err) {
+            resultZone.innerHTML = `<p style="color:#ef4444; padding:15px;">Gagal: ${err.message}</p>`;
+        } finally {
+            btn.disabled = false;
+            btn.innerText = '🚀 Generate Video';
+        }
+    }
+</script>
+</body>
+  </html>
+  
