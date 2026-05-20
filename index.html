@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIKAL-Ai v2 | Premium Studio</title>
+    <style>
+        :root { --bg: #060913; --blue: #00b4d8; --card: #0b132b; --text: #e2e8f0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        
+        /* Pintu Gerbang */
+        #gate-page { height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .gate-card { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid var(--blue); width: 100%; text-align: center; }
+        input[type="password"] { width: 100%; padding: 12px; margin: 15px 0; border-radius: 8px; background: #070a13; border: 1px solid #1c2541; color: white; }
+        .btn-primary { background: var(--blue); color: white; padding: 12px; border: none; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; }
+
+        /* Area Studio */
+        #studio-page { display: none; padding-top: 20px; }
+        .panel { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid #1c2541; margin-bottom: 20px; }
+        .grid-model { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .card-model { background: #070a13; padding: 12px; border-radius: 10px; text-align: center; border: 1px solid #1c2541; cursor: pointer; }
+        .card-model.active { border-color: var(--blue); background: rgba(0, 180, 216, 0.1); }
+        textarea { width: 100%; height: 120px; background: #070a13; color: white; padding: 10px; border-radius: 8px; border: 1px solid #1c2541; margin: 10px 0; }
+        .btn-gen { background: var(--blue); color: white; padding: 15px; border: none; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; }
+        #upload-area { border: 2px dashed #1c2541; padding: 30px; text-align: center; cursor: pointer; border-radius: 10px; margin-bottom: 10px; }
+        #preview-img { max-width: 100%; border-radius: 10px; margin-top: 10px; display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="gate-page">
+        <div class="gate-card">
+            <h1 style="color:var(--blue)">SIKAL-Ai v2</h1>
+            <p>Akses Eksklusif via Token</p>
+            <a href="https://huggingface.co/settings/tokens" target="_blank" style="color:var(--blue); font-size:12px;">Dapetin Token Gratis di sini ↗</a>
+            <input type="password" id="user-token" placeholder="Tempel token hf_...">
+            <button id="btn-enter" class="btn-primary">Masuk ke Studio ⚡</button>
+        </div>
+    </div>
+
+    <div id="studio-page">
+        <div class="container">
+            <div class="panel">
+                <h3>📸 Upload Foto</h3>
+                <div id="upload-area" onclick="document.getElementById('file-input').click()">Klik/Upload Foto</div>
+                <input type="file" id="file-input" hidden accept="image/*">
+                <img id="preview-img">
+            </div>
+            <div class="panel">
+                <h3>🎯 Model AI</h3>
+                <div class="grid-model">
+                    <div class="card-model active" onclick="selectModel(this)">Hunyuan</div>
+                    <div class="card-model" onclick="selectModel(this)">Mochi 1</div>
+                </div>
+                <h3>📝 Prompt Detail</h3>
+                <textarea id="prompt" placeholder="Ketik gerakan kamera, getaran, dan efek..."></textarea>
+                <button class="btn-gen" onclick="generate()">Generate Video 🎬</button>
+            </div>
+            <div class="panel" id="result-zone">
+                <h3>🎬 Hasil Video</h3>
+                <p style="font-size:12px; color:#666; margin-top:10px;">Video akan muncul di sini bray...</p>
+            </div>
+            <button onclick="localStorage.clear(); location.reload();" style="background:none; border:none; color:red; cursor:pointer; width:100%;">Keluar / Reset Token 🚪</button>
+        </div>
+    </div>
+
+    <script>
+        // Logika Gerbang
+        if (localStorage.getItem('sikal_hf_token')) {
+            document.getElementById('gate-page').style.display = 'none';
+            document.getElementById('studio-page').style.display = 'block';
+        }
+        document.getElementById('btn-enter').onclick = () => {
+            const token = document.getElementById('user-token').value.trim();
+            if (token.startsWith('hf_')) {
+                localStorage.setItem('sikal_hf_token', token);
+                location.reload();
+            } else { alert('Token harus dimulai hf_ bray!'); }
+        };
+        // Logika Upload Foto
+        document.getElementById('file-input').onchange = (e) => {
+            const reader = new FileReader();
+            reader.onload = (ev) => { 
+                const img = document.getElementById('preview-img');
+                img.src = ev.target.result; img.style.display = 'block'; 
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        };
+        function selectModel(el) {
+            document.querySelectorAll('.card-model').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+        }
+        function generate() { alert('Fitur koneksi ke API Hugging Face udah siap, tinggal kita sambungin ke backend Vercel lu, cok!'); }
+    </script>
+</body>
+</html>
